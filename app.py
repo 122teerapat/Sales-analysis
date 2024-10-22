@@ -16,20 +16,9 @@ df = pd.read_excel(excel_file,
                    usecols='A:Q',
                    header=0)
 
-df_product = pd.read_excel(excel_file,
-                           sheet_name=sheet_name,
-                           usecols='S:T',
-                           header=0,
-                           nrows= 6)
 st.subheader("Data Set Overview" )
 st.dataframe(df)
 
-pie_chart = px.pie(df_product,
-                   title='Total No. of Product line',
-                   values='Sum of Quantity',
-                   names='Product line.1')
-
-st.plotly_chart(pie_chart)
 st.divider()
 page = st.selectbox('Choose a page', ['Period Sales Analysis','Dairy Sales Analysis'])
 
@@ -153,7 +142,7 @@ if page == 'Period Sales Analysis':
 
         total_sales = df[mask]['Total'].sum().round(2)
         total_income = df[mask]['gross income'].sum().round(2)
-        total_rating = df[mask]['Rating'].sum().round(2)
+        total_rating = df[mask]['Rating'].mean().round(1)
 
         col1, col2, col3 = st.columns(3)
         col1.metric("Total sales",f'{total_sales} $')
@@ -228,18 +217,21 @@ elif page == 'Dairy Sales Analysis':
 
     total_sales = df[date_mask]['Total'].sum().round(2)
     total_income = df[date_mask]['gross income'].sum().round(2)
-    total_rating = df[date_mask]['Rating'].sum().round(2)
+    total_rating = df[date_mask]['Rating'].mean().round(1)
 
     previous_sales = df[previous_day_mask]['Total'].sum().round(2)
     previous_income = df[previous_day_mask]['gross income'].sum().round(2)
-    previous_rating = df[previous_day_mask]['Rating'].sum().round(2)
+    previous_rating = df[previous_day_mask]['Rating'].mean()
 
     total_change = (((total_sales - previous_sales) / previous_sales) * 100).round(2)
-    rating_change = (((total_rating - previous_rating) / previous_rating) * 100).round(2)
+    if previous_rating != 0:
+        rating_change = (((total_rating - previous_rating) / previous_rating) * 100).round(2)
+    else:
+        rating_change = 0 
     
     st.divider()
     st.subheader("Summary")
     col1, col2, col3 = st.columns(3)
-    col1.metric("Total sales",f'{total_sales} USD', total_change)
-    col2.metric("gross income", f'{total_income} USD', total_change)
-    col3.metric("Rating", f'{total_rating}', rating_change)
+    col1.metric("Total sales",f'{total_sales} USD', f'{total_change}%')
+    col2.metric("gross income", f'{total_income} USD', f'{total_change}%')
+    col3.metric("Rating", f'{total_rating}', f'{rating_change}%')
